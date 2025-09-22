@@ -1,87 +1,85 @@
-## Monitor de Preços Online (Python)
+## Gerador de Senhas Seguro (CLI)
 
-Uma ferramenta simples e configurável que busca páginas, extrai preços usando seletores CSS ou atributos, armazena histórico em CSV e alerta quando um limite é atingido.
+Script em Python para gerar senhas fortes de forma segura (usa o módulo `secrets`).
+Sem dependências externas.
 
-### Recursos
-- Configuração via YAML
-- Seletor CSS + atributo opcional ou regex
-- Repetição com backoff e cabeçalhos reais
-- Histórico gravado em `prices.csv`
-- Executa uma vez ou em loop em um intervalo
+Arquivo principal: `GeradorSenha.py`
 
 ### Instalação
-1. Crie um ambiente virtual (recomendado).
-2. Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
-3. Copie o arquivo de exemplo e personalize:
-```powershell
-copy config.example.yaml config.yaml
-```
+Nenhuma dependência extra. Requer Python 3.8+.
 
-### Configuração
-Edite `config.yaml` com uma lista de alvos. Exemplo:
-```yaml
-targets:
-  - name: Produto Exemplo USD
-    url: https://example.org/product
-    selector: span.price
-    attr: text
-    currency_symbol: "$"
-    # regex: "(\\d+[.,]\\d+)"
-    # threshold_price: 99.99
-```
-- `selector`: seletor CSS até o elemento do preço
-- `attr`: `text` para usar o texto do elemento, ou o nome do atributo
-- `currency_symbol`: símbolo opcional para remover (ex.: `$`, `R$`)
-- `regex`: captura opcional para números quando o texto tem extras
-- `threshold_price`: número opcional para alertar quando o preço for menor ou igual
-- `headers`: cabeçalhos de requisição opcionais (mescla com os padrões)
-
-### Uso
-Executar uma vez:
-```bash
-python price_monitor.py --config config.yaml --once
-```
-Executar em loop a cada 30 minutos:
-```bash
-python price_monitor.py --config config.yaml --loop --interval 1800
-```
-Limitar execuções do loop (útil para testes):
-```bash
-python price_monitor.py --config config.yaml --loop --interval 60 --max-runs 3
-```
-Mudar o caminho do CSV de saída:
-```bash
-python price_monitor.py --config config.yaml --out meus_precos.csv --once
-```
-
-### Observações
-- Alguns sites bloqueiam scraping. Considere customizar cabeçalhos ou intervalos e respeite `robots.txt` e os termos do site.
-- Sites dinâmicos podem exigir que o preço esteja renderizado no servidor ou seletores específicos. Esta ferramenta não executa JavaScript.
-- Use com responsabilidade.
-
----
-
-## Gerador de Senhas (CLI)
-
-Script simples e seguro para gerar senhas usando o módulo `secrets`.
-
-### Uso
+### Uso básico
 Gerar 1 senha de 16 caracteres (padrão):
 ```bash
-python password_generator.py
+python GeradorSenha.py
 ```
-Tamanho e quantidade:
+
+### Opções principais
+Você pode usar as flags em português (PT) ou em inglês (EN). Ambas funcionam.
+
+- Tamanho e quantidade:
 ```bash
-python password_generator.py --length 24 --count 3
+# PT
+python GeradorSenha.py --tamanho 24 --quantidade 3
+# EN
+python GeradorSenha.py --length 24 --count 3
 ```
-Exigir presença de tipos e evitar ambíguos (Il1O0):
+
+- Exigir presença de tipos de caracteres:
 ```bash
-python password_generator.py --require-lower --require-upper --require-digits --require-symbols --avoid-ambiguous
+# PT
+python GeradorSenha.py --exigir-minuscula --exigir-maiuscula --exigir-digito --exigir-simbolo
+# EN
+python GeradorSenha.py --require-lower --require-upper --require-digits --require-symbols
 ```
-Personalizar conjunto de caracteres:
+
+- Evitar caracteres ambíguos (Il1O0):
 ```bash
-python password_generator.py --no-symbols --include "@#" --exclude "xyz"
+# PT
+python GeradorSenha.py --evitar-ambiguos
+# EN
+python GeradorSenha.py --avoid-ambiguous
+```
+
+- Incluir/Excluir caracteres específicos e remover conjuntos padrão:
+```bash
+# Remover símbolos do conjunto padrão, incluir "@#" e excluir "xyz"
+# PT
+python GeradorSenha.py --sem-simbolos --incluir "@#" --excluir "xyz"
+# EN
+python GeradorSenha.py --no-symbols --include "@#" --exclude "xyz"
+```
+
+### Listagem completa das flags
+- `--tamanho`, `--length` (int, padrão: 16): comprimento da senha
+- `--quantidade`, `--count` (int, padrão: 1): quantas senhas gerar
+- `--sem-minusculas`, `--no-lower`: excluir letras minúsculas
+- `--sem-maiusculas`, `--no-upper`: excluir letras maiúsculas
+- `--sem-digitos`, `--no-digits`: excluir dígitos
+- `--sem-simbolos`, `--no-symbols`: excluir símbolos
+- `--exigir-minuscula`, `--require-lower`: exigir ao menos uma minúscula
+- `--exigir-maiuscula`, `--require-upper`: exigir ao menos uma maiúscula
+- `--exigir-digito`, `--require-digits`: exigir ao menos um dígito
+- `--exigir-simbolo`, `--require-symbols`: exigir ao menos um símbolo
+- `--evitar-ambiguos`, `--avoid-ambiguous`: evitar caracteres ambíguos (Il1O0)
+- `--incluir`, `--include` (str): caracteres extras para incluir
+- `--excluir`, `--exclude` (str): caracteres a excluir
+
+Observações:
+- Se você exigir grupos (ex.: `--exigir-maiuscula` etc.), o tamanho deve ser suficiente para comportar todos os grupos exigidos.
+- Se, após filtros e exclusões, o conjunto de caracteres ficar vazio, o programa avisará.
+
+### Boas práticas
+- Use tamanhos maiores (20+ caracteres) e exija múltiplos tipos quando possível.
+- Evite reutilizar senhas. Considere um gerenciador de senhas.
+- Ative 2FA onde houver suporte.
+
+### Exemplos rápidos
+- 5 senhas de 20 caracteres, fortes e sem ambíguos (PT):
+```bash
+python GeradorSenha.py --tamanho 20 --quantidade 5 --exigir-minuscula --exigir-maiuscula --exigir-digito --exigir-simbolo --evitar-ambiguos
+```
+- 3 senhas sem símbolos, mas incluindo "@#" (EN):
+```bash
+python GeradorSenha.py --length 18 --count 3 --no-symbols --include "@#"
 ```
